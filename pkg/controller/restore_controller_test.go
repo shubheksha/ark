@@ -283,12 +283,11 @@ func TestProcessRestore(t *testing.T) {
 			expectedRestorerCall: NewRestore("foo", "bar", "backup-1", "ns-1", "", api.RestorePhaseInProgress).WithSchedule("sched-1").Restore,
 		},
 		{
-			name:                            "restore with non-existent backup name fails",
-			restore:                         NewRestore("foo", "bar", "backup-1", "ns-1", "*", api.RestorePhaseNew).Restore,
-			expectedErr:                     false,
-			expectedPhase:                   string(api.RestorePhaseFailedValidation),
-			expectedValidationErrors:        []string{"Error retrieving backup: not able to fetch from backup storage"},
-			backupStoreGetBackupMetadataErr: errors.New("no backup here"),
+			name:                     "restore with non-existent backup name fails",
+			restore:                  NewRestore("foo", "bar", "backup-1", "ns-1", "*", api.RestorePhaseNew).Restore,
+			expectedErr:              false,
+			expectedPhase:            string(api.RestorePhaseFailedValidation),
+			expectedValidationErrors: []string{"Error retrieving backup"},
 		},
 		{
 			name:                  "restorer throwing an error causes the restore to fail",
@@ -371,13 +370,12 @@ func TestProcessRestore(t *testing.T) {
 			},
 		},
 		{
-			name:                            "backup download error results in failed restore",
-			location:                        arktest.NewTestBackupStorageLocation().WithName("default").WithProvider("myCloud").WithObjectStorage("bucket").BackupStorageLocation,
-			restore:                         NewRestore(api.DefaultNamespace, "bar", "backup-1", "ns-1", "", api.RestorePhaseNew).Restore,
-			expectedPhase:                   string(api.RestorePhaseInProgress),
-			expectedFinalPhase:              string(api.RestorePhaseFailed),
-			backupStoreGetBackupContentsErr: errors.New("Couldn't download backup"),
-			backup: arktest.NewTestBackup().WithName("backup-1").WithStorageLocation("default").Backup,
+			name:               "backup download error results in failed restore",
+			location:           arktest.NewTestBackupStorageLocation().WithName("default").WithProvider("myCloud").WithObjectStorage("bucket").BackupStorageLocation,
+			restore:            NewRestore(api.DefaultNamespace, "bar", "backup-1", "ns-1", "", api.RestorePhaseNew).Restore,
+			expectedPhase:      string(api.RestorePhaseInProgress),
+			expectedFinalPhase: string(api.RestorePhaseFailed),
+			backup:             arktest.NewTestBackup().WithName("backup-1").WithStorageLocation("default").Backup,
 		},
 	}
 
